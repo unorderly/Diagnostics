@@ -14,3 +14,4 @@ extension Dictionary: Diagnostics where Key == String { }
 extension KeyValuePairs: Diagnostics where Key == String, Value == String { }
 extension String: Diagnostics { }
 extension DirectoryTreeNode: Diagnostics { }
+extension Array: Diagnostics where Element == String { }

@@ -46,6 +46,20 @@ extension KeyValuePairs: HTMLGenerating where Key == String, Value == String {
     }
 }
 
+extension Array: HTMLGenerating where Element == String {
+    public func html() -> HTML {
+        var html = "<table>"
+
+        for element in self {
+            html += "<tr>\(element)</tr>"
+        }
+
+        html += "</table>"
+
+        return html
+    }
+}
+
 extension String: HTMLGenerating {
     public func html() -> HTML {
         return self

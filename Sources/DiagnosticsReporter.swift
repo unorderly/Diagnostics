@@ -11,7 +11,7 @@ import Foundation
 
 public protocol DiagnosticsReporting {
     /// Creates the report chapter.
-    func report() -> DiagnosticsChapter
+    func report() async -> DiagnosticsChapter
 }
 
 public enum DiagnosticsReporter {
@@ -55,26 +55,26 @@ public enum DiagnosticsReporter {
     public static func create(
         filename: String = "Diagnostics-Report.html",
         using reporters: [DiagnosticsReporting] = DefaultReporter.allReporters,
-        filters: [DiagnosticsReportFilter.Type]? = nil,
-        smartInsightsProvider: SmartInsightsProviding? = nil
-    ) -> DiagnosticsReport {
+        filters: [DiagnosticsReportFilter.Type] = [],
+        smartInsightsProviders: [SmartInsightsProviding] = []
+    ) async -> DiagnosticsReport {
         /// We should be able to parse Smart insights out of other chapters.
         /// For example: read out errors from the log chapter and create insights out of it.
         ///
         /// Therefore, we are generating insights on the go and add them to the Smart Insights later.
-        var smartInsights: [SmartInsightProviding] = []
+        var smartInsights: [SmartInsightProviding] = await smartInsightsProviders.flatMap({
+            await $0.smartInsights()
+        })
 
-        var reportChapters = reporters
+        var reportChapters = await reporters
             .filter { ($0 is SmartInsightsReporter) == false }
-            .map { reporter -> DiagnosticsChapter in
-                var chapter = reporter.report()
-                if let filters = filters, !filters.isEmpty {
+            .map { reporter async -> DiagnosticsChapter in
+                var chapter = await reporter.report()
+                if filters.isEmpty {
                     chapter.applyingFilters(filters)
                 }
-                if let smartInsightsProvider = smartInsightsProvider {
-                    let insights = smartInsightsProvider.smartInsights(for: chapter)
-                    smartInsights.append(contentsOf: insights)
-                }
+                let insights = await smartInsightsProviders.flatMap({ await $0.smartInsights(for: chapter) })
+                smartInsights.append(contentsOf: insights)
 
                 return chapter
             }

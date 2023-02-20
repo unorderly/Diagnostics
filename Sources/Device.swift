@@ -15,15 +15,15 @@ import UIKit
 
 enum Device {
     static var systemName: String {
-        #if os(macOS)
-        return ProcessInfo().hostName
+        #if os(macOS) || targetEnvironment(macCatalyst)
+        return ProcessInfo.systemName
         #else
         return UIDevice.current.systemName
         #endif
     }
 
     static var systemVersion: String {
-        #if os(macOS)
+        #if os(macOS) || targetEnvironment(macCatalyst)
         return ProcessInfo().operatingSystemVersionString
         #else
         return UIDevice.current.systemVersion
@@ -56,3 +56,38 @@ enum Device {
         return space
     }
 }
+
+#if os(macOS) || targetEnvironment(macCatalyst)
+extension ProcessInfo {
+    static var model: String {
+        if #available(macCatalyst 15.0, *) {
+            let service = IOServiceGetMatchingService(kIOMainPortDefault,
+                                                      IOServiceMatching("IOPlatformExpertDevice"))
+            
+            var modelIdentifier: String?
+            if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {
+                modelIdentifier = String(data: modelData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
+            }
+            
+            IOObjectRelease(service)
+            return modelIdentifier ?? "macOS"
+        } else {
+            return "macOS"
+        }
+    }
+    
+    static var systemName: String {
+        var sysinfo = utsname()
+        let result = uname(&sysinfo)
+        guard result == EXIT_SUCCESS else { return "macOS (unknown)" }
+        let data = Data(bytes: &sysinfo.machine, count: Int(_SYS_NAMELEN))
+        guard let identifier = String(bytes: data, encoding: .ascii) else { return "macOS (unknown)" }
+        let arch = identifier.trimmingCharacters(in: .controlCharacters)
+        switch arch {
+        case "arm64": return "macOS (Apple Silicon)"
+        case "x86_64": return "macOS (Intel)"
+        default: return "macOS (\(arch))"
+        }
+    }
+}
+#endif

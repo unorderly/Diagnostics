@@ -51,12 +51,17 @@ public struct AppSystemMetadataReporter: DiagnosticsReporting {
 
     let title: String = "App & System Details"
     var diagnostics: [String: String] {
+        var hardware: String
+#if os(macOS) || targetEnvironment(macCatalyst)
+        hardware = ProcessInfo.model
+#else
         var systemInfo = utsname()
         uname(&systemInfo)
-        var hardware = Mirror(reflecting: systemInfo.machine).children.reduce("") { identifier, element in
+        hardware = Mirror(reflecting: systemInfo.machine).children.reduce("") { identifier, element in
             guard let value = element.value as? Int8, value != 0 else { return identifier }
             return identifier + String(UnicodeScalar(UInt8(value)))
         }
+#endif
 
         if let hardwareName = Self.hardwareName[hardware] {
             hardware += " (\(hardwareName))"
