@@ -21,15 +21,8 @@ public final class UserDefaultsReporter: DiagnosticsReporting {
     public func report() -> DiagnosticsChapter {
         let userDefaults = Dictionary(self.userDefaults.flatMap({ defaults in
             Array(defaults.dictionaryRepresentation())
-        }), uniquingKeysWith: { $1 })
-        return DiagnosticsChapter(title: "UserDefaults", diagnostics: userDefaults, formatter: Self.self)
-    }
-}
-
-extension UserDefaultsReporter: HTMLFormatting {
-    public static func format(_ diagnostics: Diagnostics) -> HTML {
-        guard let userDefaultsDict = diagnostics as? [String: Any] else { return diagnostics.html() }
-        return "<pre>\(userDefaultsDict.jsonRepresentation ?? "Could not parse User Defaults")</pre>"
+        }), uniquingKeysWith: { $1 }).jsonRepresentation ?? ""
+        return DiagnosticsChapter(title: "UserDefaults", diagnostics: userDefaults, formatter: JSONFormatting.self)
     }
 }
 

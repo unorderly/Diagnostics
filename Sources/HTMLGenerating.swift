@@ -93,3 +93,24 @@ extension DiagnosticsChapter: HTMLGenerating {
         return html
     }
 }
+
+public struct JSONFormatting: HTMLFormatting {
+    public static func format(_ diagnostics: Diagnostics) -> HTML {
+        guard let text = diagnostics as? String else { return diagnostics.html() }
+        let id = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        return """
+        <a id="download-\(id)">Download</a>
+        <div id="content-\(id)">\(text)</div>
+        <script src="https://cdn.jsdelivr.net/gh/pgrabovets/json-view@master/dist/jsonview.js"></script>
+        <script>
+            var a = document.getElementById("download-\(id)");
+            a.download = "Export.json";
+            a.href = "data:application/json," + document.getElementById("content-\(id)").textContent;
+            const tree\(id) = jsonview.create(document.getElementById("content-\(id)").textContent);
+            document.getElementById("content-\(id)").textContent = "";
+            jsonview.render(tree\(id), document.getElementById("content-\(id)"));
+            jsonview.expand(tree\(id));
+        </script>
+        """
+    }
+}
