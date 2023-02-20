@@ -9,6 +9,8 @@
 import Foundation
 #if os(macOS)
 import AppKit
+#elseif os(watchOS)
+import WatchKit
 #else
 import UIKit
 #endif
@@ -17,6 +19,8 @@ enum Device {
     static var systemName: String {
         #if os(macOS) || targetEnvironment(macCatalyst)
         return ProcessInfo.systemName
+        #elseif os(watchOS)
+        return WKInterfaceDevice.current().systemName
         #else
         return UIDevice.current.systemName
         #endif
@@ -25,13 +29,18 @@ enum Device {
     static var systemVersion: String {
         #if os(macOS) || targetEnvironment(macCatalyst)
         return ProcessInfo().operatingSystemVersionString
+        #elseif os(watchOS)
+        return WKInterfaceDevice.current().systemVersion
         #else
         return UIDevice.current.systemVersion
         #endif
     }
 
-    static var freeDiskSpace: ByteCountFormatter.Units.GigaBytes {
-        ByteCountFormatter.string(fromByteCount: freeDiskSpaceInBytes, countStyle: ByteCountFormatter.CountStyle.decimal)
+    static var freeDiskSpace: ByteCountFormatter.Units.GigaBytes? {
+        if let freeDiskSpaceInBytes {
+            return ByteCountFormatter.string(fromByteCount: freeDiskSpaceInBytes, countStyle: ByteCountFormatter.CountStyle.decimal)
+        }
+        return nil
     }
 
     static var totalDiskSpace: ByteCountFormatter.Units.GigaBytes {
@@ -47,13 +56,17 @@ enum Device {
         return Int64(space)
     }
 
-    static var freeDiskSpaceInBytes: ByteCountFormatter.Units.Bytes {
+    static var freeDiskSpaceInBytes: ByteCountFormatter.Units.Bytes? {
+#if !os(watchOS)
         guard let space = try? URL(fileURLWithPath: NSHomeDirectory() as String)
             .resourceValues(forKeys: [URLResourceKey.volumeAvailableCapacityForOpportunisticUsageKey])
             .volumeAvailableCapacityForOpportunisticUsage else {
-            return 0
+            return nil
         }
         return space
+#else
+        return nil
+#endif
     }
 }
 

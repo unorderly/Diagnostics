@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(CoreTelephony)
 import CoreTelephony
+#endif
 
 /// Reports App and System specific metadata like OS and App version.
 public struct AppSystemMetadataReporter: DiagnosticsReporting {
@@ -75,7 +77,7 @@ public struct AppSystemMetadataReporter: DiagnosticsReporting {
             MetadataKey.appVersion.rawValue: "\(Bundle.appVersion) (\(Bundle.appBuildNumber))",
             MetadataKey.device.rawValue: hardware,
             MetadataKey.system.rawValue: system,
-            MetadataKey.freeSpace.rawValue: "\(Device.freeDiskSpace) of \(Device.totalDiskSpace)",
+            MetadataKey.freeSpace.rawValue: "\(Device.freeDiskSpace?.description ?? "n/a") of \(Device.totalDiskSpace)",
             MetadataKey.deviceLanguage.rawValue: Locale.current.languageCode ?? "Unknown",
             MetadataKey.appLanguage.rawValue: Locale.preferredLanguages[0]
         ]

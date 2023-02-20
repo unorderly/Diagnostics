@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(MetricKit)
 import MetricKit
+#endif
 import ExceptionCatcher
 
 #if os(macOS)
@@ -49,7 +51,10 @@ public final class DiagnosticsLogger {
             return true
         }
         defer { logLinesPassedSinceLastDiskCheck = 0 }
-        guard Device.freeDiskSpaceInBytes > minimumRequiredDiskSpace else {
+        guard let freeDiskSpaceInBytes = Device.freeDiskSpaceInBytes else {
+            return true
+        }
+        guard freeDiskSpaceInBytes > minimumRequiredDiskSpace else {
             return false
         }
         return true

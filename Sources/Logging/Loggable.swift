@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(MetricKit)
 import MetricKit
+#endif
 
 enum LoggableCSSClass: String {
     case debug, error, system

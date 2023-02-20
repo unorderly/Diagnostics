@@ -6,7 +6,9 @@
 //
 
 import Foundation
+#if canImport(MetricKit)
 import MetricKit
+#endif
 
 /// Monitors payloads delivered by MetricKit and logs valueable information, including crashes.
 final class MetricsMonitor: NSObject {
