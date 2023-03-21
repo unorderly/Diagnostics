@@ -25,13 +25,7 @@ struct LogsReporter: DiagnosticsReporting {
 
             diagnostics += "<div class=\"collapsible-session\">"
             diagnostics += "<details>"
-            if session.isOldStyleSession {
-                let title = session.split(whereSeparator: \.isNewline).first ?? "Unknown session title"
-                diagnostics += "<summary>\(title)</summary>"
-                diagnostics += "<pre>\(session.addingHTMLEncoding())</pre>"
-            } else {
-                diagnostics += session
-            }
+            diagnostics += session
             diagnostics += "</details>"
             diagnostics += "</div>"
         }
