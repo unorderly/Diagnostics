@@ -127,8 +127,8 @@ extension DiagnosticsLogger {
         let logFileHandle = try FileHandle(forWritingTo: logFileLocation)
         logFileHandle.seekToEndOfFile()
         logSize = Int64(logFileHandle.offsetInFile)
-        setupPipe()
-        metricsMonitor.startMonitoring()
+//        setupPipe()
+//        metricsMonitor.startMonitoring()
         isSetup = true
         startNewSession()
     }
