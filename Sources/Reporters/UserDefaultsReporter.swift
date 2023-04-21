@@ -12,15 +12,17 @@ import Foundation
 public final class UserDefaultsReporter: DiagnosticsReporting {
 
     /// Defaults to `standard`. Can be used to override and return a different user defaults.
-    public var userDefaults: [UserDefaults]
+    public var userDefaults: [String: UserDefaults]
     
-    public init(userDefaults: [UserDefaults] = [.standard]) {
+    public init(userDefaults: [String: UserDefaults] = ["standard": .standard]) {
         self.userDefaults = userDefaults
     }
     
     public func report() -> DiagnosticsChapter {
-        let userDefaults = Dictionary(self.userDefaults.flatMap({ defaults in
-            Array(defaults.dictionaryRepresentation())
+        let userDefaults = Dictionary(self.userDefaults.flatMap({ name, defaults in
+            defaults.dictionaryRepresentation().map({
+                (name + "-" + $0, $1)
+            })
         }), uniquingKeysWith: { $1 }).jsonRepresentation ?? ""
         return DiagnosticsChapter(title: "UserDefaults", diagnostics: userDefaults, formatter: JSONFormatting.self)
     }
