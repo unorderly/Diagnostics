@@ -128,7 +128,9 @@ extension DiagnosticsLogger {
         let logFileHandle = try FileHandle(forWritingTo: logFileLocation)
         logFileHandle.seekToEndOfFile()
         logSize = Int64(logFileHandle.offsetInFile)
-        logs()
+        if #available(iOS 15.0, *) {
+            logs()
+        } 
         isSetup = true
         startNewSession()
     }
@@ -201,24 +203,24 @@ extension DiagnosticsLogger {
                 }
             }
         }
-        
-        @available(iOS 15.0, *)
-        func logs() -> String {
-            do {
-                // Open the log store.
-                let logStore = try OSLogStore(scope: .currentProcessIdentifier)
-                // Get all the logs from the last hour.
-                let oneDay = logStore.position(date: Date().addingTimeInterval(-3600 * 24))
-                // Fetch log objects.
-                let allEntries = try logStore.getEntries(at: oneDay)
-                // Filter the log to be relevant for our specific subsystem
-                // and remove other elements (signposts, etc).
-                return allEntries
-                    .compactMap { ($0 as? OSLogEntryLog)?.message }
-                    .joined(separator: "\n")
-            } catch {
-                return error.localizedDescription
-            }
+    }
+    
+    @available(iOS 15.0, *)
+    func logs() -> String {
+        do {
+            // Open the log store.
+            let logStore = try OSLogStore(scope: .currentProcessIdentifier)
+            // Get all the logs from the last hour.
+            let oneDay = logStore.position(date: Date().addingTimeInterval(-3600 * 24))
+            // Fetch log objects.
+            let allEntries = try logStore.getEntries(at: oneDay)
+            // Filter the log to be relevant for our specific subsystem
+            // and remove other elements (signposts, etc).
+            return allEntries
+                .compactMap { ($0 as? OSLogEntryLog)?.message }
+                .joined(separator: "\n")
+        } catch {
+            return error.localizedDescription
         }
     }
 
