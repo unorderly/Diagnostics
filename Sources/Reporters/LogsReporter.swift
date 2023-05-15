@@ -20,6 +20,13 @@ struct LogsReporter: DiagnosticsReporting {
 
         let sessions = logs.components(separatedBy: "\n\n---\n\n").reversed()
         var diagnostics = ""
+        if #available(iOS 15.0, *), let systemLogs = DiagnosticsLogger.standard.systemLogs() {
+            diagnostics += """
+                <div class="collapsible-session"><details><summary><div class="session-header"><p><span><b>System Logs</b></p></div></summary>
+                \(systemLogs)
+                </details></div>
+                """
+        }
         sessions.forEach { session in
             guard !session.isEmpty else { return }
 

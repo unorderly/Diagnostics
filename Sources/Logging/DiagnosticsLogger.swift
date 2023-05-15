@@ -128,9 +128,6 @@ extension DiagnosticsLogger {
         let logFileHandle = try FileHandle(forWritingTo: logFileLocation)
         logFileHandle.seekToEndOfFile()
         logSize = Int64(logFileHandle.offsetInFile)
-        if #available(iOS 15.0, *) {
-            logs()
-        } 
         isSetup = true
         startNewSession()
     }
@@ -206,7 +203,7 @@ extension DiagnosticsLogger {
     }
     
     @available(iOS 15.0, *)
-    func logs() -> String {
+    func systemLogs() -> String? {
         do {
             // Open the log store.
             let logStore = try OSLogStore(scope: .currentProcessIdentifier)
@@ -217,10 +214,10 @@ extension DiagnosticsLogger {
             // Filter the log to be relevant for our specific subsystem
             // and remove other elements (signposts, etc).
             return allEntries
-                .compactMap { ($0 as? OSLogEntryLog)?.message }
+                .compactMap { ($0 as? OSLogEntryLog)?.formattedMessage }
                 .joined(separator: "\n")
         } catch {
-            return error.localizedDescription
+            return nil
         }
     }
 

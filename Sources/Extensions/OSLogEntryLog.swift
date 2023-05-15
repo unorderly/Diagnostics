@@ -10,7 +10,9 @@ import OSLog
 
 @available(iOS 15.0, *)
 extension OSLogEntryLog {
-    var message: String {
-        return "[\(self.level)] \(DateFormatter.current.string(from: self.date)): \(self.subsystem)-\(self.category): \(self.composedMessage)"
+    var formattedMessage: String {
+        """
+        <p class="debug"><span class="log-date">\(DateFormatter.current.string(from: self.date))</span><span class="log-separator"> | </span><span class="log-prefix">\(self.subsystem)-\(self.category)</span><span class="log-separator"> | </span><span class="log-message">\(self.composedMessage)</span></p>
+        """
     }
 }
