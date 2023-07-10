@@ -81,7 +81,7 @@ public struct AppSystemMetadataReporter: DiagnosticsReporting {
             MetadataKey.deviceLanguage.rawValue: Locale.current.languageCode ?? "Unknown",
             MetadataKey.appLanguage.rawValue: Locale.preferredLanguages[0]
         ]
-        #if os(iOS) && !targetEnvironment(macCatalyst)
+        #if os(iOS) && !targetEnvironment(macCatalyst)  && !os(xrOS)
             let cellularData = CTCellularData()
             metadata[MetadataKey.cellularAllowed.rawValue] = "\(cellularData.restrictedState)"
         #endif
@@ -93,7 +93,7 @@ public struct AppSystemMetadataReporter: DiagnosticsReporting {
     }
 }
 
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !targetEnvironment(macCatalyst) && !os(xrOS)
 extension CTCellularDataRestrictedState: CustomStringConvertible {
      public var description: String {
         switch self {
