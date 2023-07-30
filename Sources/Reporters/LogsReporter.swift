@@ -13,8 +13,8 @@ struct LogsReporter: DiagnosticsReporting {
 
     let title: String = "Session Logs"
 
-    var diagnostics: String {
-        guard let data = DiagnosticsLogger.standard.readLog(), let logs = String(data: data, encoding: .utf8) else {
+    func diagnostics() async -> String {
+        guard let data = await DiagnosticsLogger.standard.readLog(), let logs = String(data: data, encoding: .utf8) else {
             return "Parsing the log failed"
         }
 
@@ -39,7 +39,8 @@ struct LogsReporter: DiagnosticsReporting {
         return diagnostics
     }
 
-    func report() -> DiagnosticsChapter {
+    func report() async -> DiagnosticsChapter {
+        let diagnostics = await self.diagnostics()
         return DiagnosticsChapter(title: title, diagnostics: diagnostics, formatter: Self.self)
     }
 }

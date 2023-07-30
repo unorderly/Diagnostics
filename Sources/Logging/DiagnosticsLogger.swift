@@ -142,20 +142,17 @@ extension DiagnosticsLogger {
     }
 
     /// Reads the log and converts it to a `Data` object.
-    func readLog() -> Data? {
+    func readLog() async -> Data? {
         guard isSetup else {
             assertionFailure("Trying to read the log while not set up")
             return nil
         }
 
-        return queue.sync {
-            let coordinator = NSFileCoordinator(filePresenter: nil)
-            var error: NSError?
-            var logData: Data?
-            coordinator.coordinate(readingItemAt: logFileLocation, error: &error) { url in
-                logData = try? Data(contentsOf: url)
+        return await withCheckedContinuation { continuation in
+            queue.async {
+                let logData = try? Data(contentsOf: self.logFileLocation)
+                continuation.resume(returning: logData)
             }
-            return logData
         }
     }
 
@@ -170,34 +167,30 @@ extension DiagnosticsLogger {
             return assertionFailure("Trying to log a message while not set up")
         }
 
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            let coordinator = NSFileCoordinator(filePresenter: nil)
-            var error: NSError?
-            coordinator.coordinate(writingItemAt: self.logFileLocation, error: &error) { [weak self] url in
-                do {
-                    guard let self = self, self.canWriteNewLogs else { return }
+        queue.async {
+            let url = self.logFileLocation
+            do {
+                guard self.canWriteNewLogs else { return }
 
-                    guard let data = loggable.logData else {
-                        return assertionFailure("Missing file handle or invalid output logged")
-                    }
-
-                    let fileHandle = try FileHandle(forWritingTo: url)
-                    if #available(OSX 10.15.4, iOS 13.4, watchOS 6.0, tvOS 13.4, *) {
-                        defer {
-                            try? fileHandle.close()
-                        }
-                        try fileHandle.seekToEnd()
-                        try fileHandle.write(contentsOf: data)
-                    } else {
-                        self.legacyAppend(data, to: fileHandle)
-                    }
-
-                    self.logSize += Int64(data.count)
-                    self.trimLinesIfNecessary()
-                } catch {
-                    print("Writing data failed with error: \(error)")
+                guard let data = loggable.logData else {
+                    return assertionFailure("Missing file handle or invalid output logged")
                 }
+
+                let fileHandle = try FileHandle(forWritingTo: url)
+                if #available(OSX 10.15.4, iOS 13.4, watchOS 6.0, tvOS 13.4, *) {
+                    defer {
+                        try? fileHandle.close()
+                    }
+                    try fileHandle.seekToEnd()
+                    try fileHandle.write(contentsOf: data)
+                } else {
+                    self.legacyAppend(data, to: fileHandle)
+                }
+
+                self.logSize += Int64(data.count)
+                self.trimLinesIfNecessary()
+            } catch {
+                print("Writing data failed with error: \(error)")
             }
         }
     }
