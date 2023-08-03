@@ -11,7 +11,7 @@ extension Sequence {
         return values
     }
     
-    public func flatMap<SegmentOfResult>(
+    func flatMap<SegmentOfResult>(
         _ transform: (Self.Element) async throws -> SegmentOfResult
     ) async rethrows -> [SegmentOfResult.Element] where SegmentOfResult : Sequence {
         var values = [SegmentOfResult.Element]()
