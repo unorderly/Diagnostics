@@ -104,9 +104,10 @@ public struct JSONFormatting: HTMLFormatting {
         <script src="https://cdn.jsdelivr.net/gh/pgrabovets/json-view@master/dist/jsonview.js"></script>
         <script>
             var a = document.getElementById("download-\(id)");
+            var content = document.getElementById("content-\(id)").textContent;
             a.download = "Export.json";
-            a.href = "data:application/json," + document.getElementById("content-\(id)").textContent;
-            const tree\(id) = jsonview.create(document.getElementById("content-\(id)").textContent);
+            a.href = "data:application/json," + encodeURIComponent(content);
+            const tree\(id) = jsonview.create(content);
             document.getElementById("content-\(id)").textContent = "";
             jsonview.render(tree\(id), document.getElementById("content-\(id)"));
             jsonview.expand(tree\(id));
